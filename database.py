@@ -80,6 +80,36 @@ class User(Base):
         onupdate=func.now()
     )
 
+class Promotion(Base):
+    __tablename__ = "promotions"
+
+    id: Mapped[int] = mapped_column(primary_key=True, autoincrement=True)
+
+    user_id: Mapped[int] = mapped_column(BigInteger, index=True)
+
+    message: Mapped[str] = mapped_column(String(4096))
+
+    status: Mapped[str] = mapped_column(
+        String(32),
+        default="pending",
+        index=True
+    )
+
+    created_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True),
+        server_default=func.now()
+    )
+
+    approved_at: Mapped[datetime | None] = mapped_column(
+        DateTime(timezone=True),
+        nullable=True
+    )
+
+    rejected_at: Mapped[datetime | None] = mapped_column(
+        DateTime(timezone=True),
+        nullable=True
+    )
+
 
 async def get_db() -> AsyncGenerator[AsyncSession, None]:
     async with async_session() as session:

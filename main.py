@@ -11,6 +11,7 @@ from dotenv import load_dotenv
 
 from database import engine, Base, async_session, User, get_db
 from auth import validate_init_data
+from routes.promotion import router as promotion_router
 
 load_dotenv()
 
@@ -28,6 +29,8 @@ async def lifespan(app: FastAPI):
 
 
 app = FastAPI(lifespan=lifespan)
+
+app.include_router(promotion_router)
 
 app.add_middleware(
     CORSMiddleware,
