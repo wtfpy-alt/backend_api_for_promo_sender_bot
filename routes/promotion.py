@@ -4,7 +4,7 @@ from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from ..database import Promotion, get_db
+from database import Promotion, get_db
 
 router = APIRouter(prefix="/promotions", tags=["promotions"])
 
@@ -47,14 +47,14 @@ async def get_pending_promotions(db: AsyncSession = Depends(get_db)):
     ]
 
 
-@router.post("/{promo_id}/approve")
+@router.post("/approve")
 async def approve_promotion(
-    promo_id: int,
+    promotion_id: int,
     db: AsyncSession = Depends(get_db)
 ):
 
     result = await db.execute(
-        select(Promotion).where(Promotion.id == promo_id)
+        select(Promotion).where(Promotion.id == promotion_id)
     )
 
     promo = result.scalar_one_or_none()
@@ -70,14 +70,14 @@ async def approve_promotion(
     return {"ok": True}
 
 
-@router.post("/{promo_id}/reject")
+@router.post("/reject")
 async def reject_promotion(
-    promo_id: int,
+    promotion_id: int,
     db: AsyncSession = Depends(get_db)
 ):
 
     result = await db.execute(
-        select(Promotion).where(Promotion.id == promo_id)
+        select(Promotion).where(Promotion.id == promotion_id)
     )
 
     promo = result.scalar_one_or_none()
@@ -91,3 +91,22 @@ async def reject_promotion(
     await db.commit()
 
     return {"ok": True}
+
+@router.get("")
+async def get_promotions(db: AsyncSession = Depends(get_db)):
+    result = await db.execute(
+        select(Promotion).order_by(Promotion.created_at.desc())
+    )
+
+    promotions = result.scalars().all()
+
+    return [
+        {
+            "id": p.id,
+            "user_id": p.user_id,
+            "text": p.message,
+            "status": p.status,
+            "created_at": p.created_at
+        }
+        for p in promotions
+    ]

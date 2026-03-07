@@ -80,14 +80,22 @@ class User(Base):
         onupdate=func.now()
     )
 
+from sqlalchemy import Text, Integer, ForeignKey
+from sqlalchemy.orm import relationship
+from datetime import datetime
+
 class Promotion(Base):
     __tablename__ = "promotions"
 
-    id: Mapped[int] = mapped_column(primary_key=True, autoincrement=True)
+    id: Mapped[int] = mapped_column(primary_key=True)
 
-    user_id: Mapped[int] = mapped_column(BigInteger, index=True)
+    user_id: Mapped[int] = mapped_column(
+        BigInteger,
+        ForeignKey("users.telegram_id"),
+        index=True
+    )
 
-    message: Mapped[str] = mapped_column(String(4096))
+    text: Mapped[str] = mapped_column(Text)
 
     status: Mapped[str] = mapped_column(
         String(32),
@@ -95,21 +103,39 @@ class Promotion(Base):
         index=True
     )
 
+    scheduled_at: Mapped[datetime | None] = mapped_column(
+        DateTime(timezone=True),
+        nullable=True
+    )
+
     created_at: Mapped[datetime] = mapped_column(
         DateTime(timezone=True),
         server_default=func.now()
     )
 
-    approved_at: Mapped[datetime | None] = mapped_column(
-        DateTime(timezone=True),
-        nullable=True
+    sent: Mapped[bool] = mapped_column(
+        Boolean,
+        default=False
     )
 
-    rejected_at: Mapped[datetime | None] = mapped_column(
-        DateTime(timezone=True),
-        nullable=True
+
+class AllowedChat(Base):
+    __tablename__ = "allowed_chats"
+
+    id: Mapped[int] = mapped_column(primary_key=True)
+
+    chat_id: Mapped[int] = mapped_column(
+        BigInteger,
+        unique=True,
+        index=True
     )
 
+    title: Mapped[str | None] = mapped_column(String(255))
+
+    active: Mapped[bool] = mapped_column(
+        Boolean,
+        default=True
+    )
 
 async def get_db() -> AsyncGenerator[AsyncSession, None]:
     async with async_session() as session:

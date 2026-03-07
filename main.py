@@ -9,9 +9,10 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from dotenv import load_dotenv
 
-from database import engine, Base, async_session, User, get_db
+from routes.database import engine, Base, async_session, User, get_db
 from auth import validate_init_data
 from routes.promotion import router as promotion_router
+from routes.promotion import Promotion
 
 load_dotenv()
 
@@ -31,6 +32,7 @@ async def lifespan(app: FastAPI):
 app = FastAPI(lifespan=lifespan)
 
 app.include_router(promotion_router)
+app.include_router(Promotion.router, prefix="/api")
 
 app.add_middleware(
     CORSMiddleware,
