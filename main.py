@@ -47,7 +47,7 @@ async def health():
     return {"status": "ok", "time": datetime.utcnow()}
 
 
-@app.post("/api/auth")
+@app.post("/auth")
 async def auth(request: Request):
 
     body = await request.json()
@@ -68,7 +68,7 @@ async def auth(request: Request):
     }
 
 
-@app.get("/api/stats")
+@app.get("/stats")
 async def stats(db: AsyncSession = Depends(get_db)):
 
     total = await db.scalar(select(func.count()).select_from(User))
@@ -88,7 +88,7 @@ async def stats(db: AsyncSession = Depends(get_db)):
     }
 
 
-@app.get("/api/users")
+@app.get("/users")
 async def users(db: AsyncSession = Depends(get_db)):
 
     result = await db.execute(select(User))
@@ -106,7 +106,7 @@ async def users(db: AsyncSession = Depends(get_db)):
     ]
 
 
-@app.post("/api/ban")
+@app.post("/ban")
 async def ban(data: dict, db: AsyncSession = Depends(get_db)):
 
     user_id = data.get("user_id")
