@@ -9,10 +9,9 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from dotenv import load_dotenv
 
-from routes.database import engine, Base, async_session, User, get_db
+from routes.database import engine, Base, User, get_db
 from auth import validate_init_data
 from routes.promotion import router as promotion_router
-from routes.promotion import Promotion
 
 load_dotenv()
 
@@ -31,8 +30,8 @@ async def lifespan(app: FastAPI):
 
 app = FastAPI(lifespan=lifespan)
 
-app.include_router(promotion_router)
-app.include_router(Promotion.router, prefix="/api")
+# include promotion routes
+app.include_router(promotion_router, prefix="/api")
 
 app.add_middleware(
     CORSMiddleware,
@@ -52,7 +51,6 @@ async def health():
 async def auth(request: Request):
 
     body = await request.json()
-
     init_data = body.get("initData")
 
     if not init_data:
@@ -94,7 +92,6 @@ async def stats(db: AsyncSession = Depends(get_db)):
 async def users(db: AsyncSession = Depends(get_db)):
 
     result = await db.execute(select(User))
-
     users = result.scalars().all()
 
     return [
@@ -123,7 +120,6 @@ async def ban(data: dict, db: AsyncSession = Depends(get_db)):
         raise HTTPException(404, "User not found")
 
     user.banned = True
-
     await db.commit()
 
     return {"ok": True}
