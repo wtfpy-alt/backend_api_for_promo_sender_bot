@@ -88,35 +88,19 @@ class Promotion(Base):
     __tablename__ = "promotions"
 
     id: Mapped[int] = mapped_column(primary_key=True)
+    user_id: Mapped[int] = mapped_column(BigInteger, ForeignKey("users.telegram_id"), index=True)
+    text: Mapped[str] = mapped_column(Text)  # ← rename from message to text for consistency
+    status: Mapped[str] = mapped_column(String(32), default="pending", index=True)
+    scheduled_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True)
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now())
+    sent: Mapped[bool] = mapped_column(Boolean, default=False)
 
-    user_id: Mapped[int] = mapped_column(
-        BigInteger,
-        ForeignKey("users.telegram_id"),
-        index=True
-    )
+    # NEW fields for approve/reject timestamps
+    approved_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True)
+    rejected_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True)
 
-    text: Mapped[str] = mapped_column(Text)
-
-    status: Mapped[str] = mapped_column(
-        String(32),
-        default="pending",
-        index=True
-    )
-
-    scheduled_at: Mapped[datetime | None] = mapped_column(
-        DateTime(timezone=True),
-        nullable=True
-    )
-
-    created_at: Mapped[datetime] = mapped_column(
-        DateTime(timezone=True),
-        server_default=func.now()
-    )
-
-    sent: Mapped[bool] = mapped_column(
-        Boolean,
-        default=False
-    )
+    # Optional: relationship
+    user = relationship("User", back_populates="promotions")
 
 
 class AllowedChat(Base):
